@@ -1,56 +1,264 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Comparative transcriptomics of ant phenotypic traits by MikheyevLab</title>
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-light.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Comparative transcriptomics of ant phenotypic traits</h1>
-        <p>Comparative transcriptomics reveals the conserved building blocks involved in parallel evolution of ant phenotypic traits</p>
+.link {
+  fill: none;
+  stroke: #BAC0C0;
+  stroke-width: 1.5px;
+}
 
-        <p class="view"><a href="https://github.com/MikheyevLab/Comparative-transcriptomics-of-ants">View the Project on GitHub <small>MikheyevLab/Comparative-transcriptomics-of-ants</small></a></p>
+.node {
+  fill: #1f77b4;
+}
 
 
-        <ul>
-          <li><a href="https://github.com/MikheyevLab/Comparative-transcriptomics-of-ants/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/MikheyevLab/Comparative-transcriptomics-of-ants/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/MikheyevLab/Comparative-transcriptomics-of-ants">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
-<a id="comparative-transcriptomics-of-ants" class="anchor" href="#comparative-transcriptomics-of-ants" aria-hidden="true"><span class="octicon octicon-link"></span></a>Comparative-transcriptomics-of-ants</h1>
+.node.fixed {
+  fill: #f00;
+}
 
-<p>Comparative transcriptomics reveals the conserved regulatory building blocks involved in the maintenance and parallel evolution of caste and other phenotypic traits in ants</p>
+text.nodetext {
+  fill: black;
+  font: 20px sans-serif;
+}
 
-<p>Morandin et al. in prep</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/MikheyevLab">MikheyevLab</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
+.node:not(:hover) .nodetext {
+  display: none;
+}
+
+text.legendtext {
+  fill: black;
+  font: 20px sans-serif;
+}
+
+.legend {
+  fill: #1f77b4;
+}
+
+ul {width: 600px; }
+
+text.legendTitle {
+  font: 20px sans-serif;
+  font-weight: bold;
+  fill: black;
+  text-anchor: end;
+}
+
+
+</style>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Weighted gene coexpression network analysis: Interactive exploration of network structure</title>
+  <meta name="description" content="Demo for How to Build an Interactive Network Visualization.">
+  <meta name="author" content="Sasha Mikheyev">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+
+<body>
+
+  <div id="container" class="container">
+    <header>
+    <h1>WGCNA reconstruction of ant transcriptional networks</h1>
+    <ul>
+    <li>Each module represents a co-expressed cluster of genes (nodes in this graph), with the top 100 links shown in this representation (edges). </li>
+    <li> A OrthoDB7 identifier and BLAST hit description is displayed if you hover over a link. </li>
+    <li> Links can be dragged into different positions and fixed in a given location by clicking on them. </li>
+    <li> Expression of some modules is correlated with queen or worker phenotypes, which is indicated in their title in the selection menu.
+    </ul>
+
+    </header>
+
+
+
+      <div id="datase_selection" class="control">
+        <h3>Module</h3>
+        <select onchange="OnSelectionChange (this)">
+        <option value="" disabled selected style="display:none;">Choose module</option>
+        <option value=visant/1.json> Module 1 Queen</option>
+        <option value=visant/2.json> Module 2 Queen</option>
+        <option value=visant/3.json> Module 3 Worker</option>
+        <option value=visant/4.json> Module 4 Queen</option>
+        <option value=visant/5.json> Module 5 Queen</option>
+        <option value=visant/6.json> Module 6 Queen</option>
+        <option value=visant/7.json> Module 7 Worker</option>
+        <option value=visant/8.json> Module 8 Worker</option>
+        <option value=visant/9.json> Module 9 Worker</option>
+        <option value=visant/10.json> Module 10 Worker</option>
+        <option value=visant/11.json> Module 11 </option>
+        <option value=visant/12.json> Module 12 Worker</option>
+        <option value=visant/13.json> Module 13 Queen</option>
+        <option value=visant/14.json> Module 14 </option>
+        <option value=visant/15.json> Module 15 Queen</option>
+        <option value=visant/16.json> Module 16 Queen</option>
+        <option value=visant/17.json> Module 17 WorkerWorker</option>
+        <option value=visant/18.json> Module 18 Queen</option>
+        <option value=visant/19.json> Module 19 </option>
+        <option value=visant/20.json> Module 20 Queen</option>
+        <option value=visant/21.json> Module 21 Queen</option>
+        <option value=visant/22.json> Module 22 Queen</option>
+        <option value=visant/23.json> Module 23 Queen</option>
+        <option value=visant/24.json> Module 24 </option>
+        <option value=visant/25.json> Module 25 Worker</option>
+        <option value=visant/26.json> Module 26 Worker</option>
+        <option value=visant/27.json> Module 27 Queen</option>
+        <option value=visant/28.json> Module 28 Queen</option>
+        <option value=visant/29.json> Module 29 Queen</option>
+        <option value=visant/30.json> Module 30 Queen</option>
+        <option value=visant/31.json> Module 31 Queen</option>
+        <option value=visant/32.json> Module 32 Worker</option>
+        <option value=visant/33.json> Module 33 Worker</option>
+        <option value=visant/34.json> Module 34 Queen</option>
+        <option value=visant/35.json> Module 35 </option>
+        <option value=visant/36.json> Module 36 Worker </option>
+        </select>
+
+      </div>
+  </div> <!--! end of #container -->
+
+
+<script src="./js/d3.v3.min.js"></script>
+<script>
+
+// get selection
+function OnSelectionChange (select) {
+  var selectedOption = select.options[select.selectedIndex];
+
+  // remove any previous plot
+d3.select("svg").remove();
+var width = 1200,
+    height = 800;
+
+  var color = d3.scale.category20();
+
+  var force = d3.layout.force()
+      .linkDistance(200)
+      .chargeDistance(300)
+      .gravity(.1)
+      .charge(-300)
+      .size([width, height]);
+
+  var drag = force.drag()
+      .on("dragstart", dragstart);
+
+  // undo fix with double click
+  function dblclick(d) {
+    d3.select(this).classed("fixed", d.fixed = false);
+  }
+
+  // fix node by dragging
+  function dragstart(d) {
+    d3.select(this).classed("fixed", d.fixed = true);
+  }
+
+  var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  d3.json(selectedOption.value, function(error, graph) {
+
+    force
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .start();
+
+    var link = svg.selectAll(".link")
+        .data(graph.links)
+        .enter().append("line")
+        .attr("class", "link");
+        // .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+        // .style("stroke-width", function(d) { return d.value });
+
+    var node = svg.selectAll(".node")
+        .data(graph.nodes)
+        .enter().append("g")
+        .attr("class", "node")
+        .call(force.drag)
+        .on("dblclick", dblclick);
+
+    // add the nodes
+    node.append("circle")
+        .attr("r", function(d) { return 1+Math.log(d.level);});
+
+    // add the text
+    node.append("text")
+        .attr("class", "nodetext")
+        .attr("x", 12)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.description; });
+
+    force.on("tick", function() {
+        // Update the links
+        link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
+
+        // Translate the groups
+        node.attr("transform", function(d) {
+          return 'translate(' + [d.x, d.y] + ')';
+        });
+    });
+    node.on('mouseover', function(d) {
+      link.style('stroke', function(l) {
+        if (d === l.source || d === l.target)
+          return '#FF5050';
+        else
+          return '#BAC0C0';
+        });
+    });
+
+    // Set the stroke width back to normal when mouse leaves the node.
+    node.on('mouseout', function() {
+      link.style('stroke', '#BAC0C0');
+    });
+
+
+    // Add a legend for the size of the circles
+    var legend = svg.selectAll(".legend")
+        .data([10,100,1000,10000])
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function (d, i) {
+        return "translate(0," + i * 20 + ")";
+    });
+
+    legend.append("circle")
+        .attr("cx", width - 18)
+        .attr("cy", 39)
+        .attr("r", function (d) {return Math.log(d);});
+
+    legend.append("text")
+        .attr("class", "legendtext")
+        .attr("x", width - 32)
+        .attr("y", 47)
+        .style("text-anchor", "end")
+        .text(function (d) {return d; });
+
+    var legendTitle = svg.selectAll(".legendTitle")
+        .data([0])
+        .enter().append("g")
+        .append("text")
+        .attr("class", "legendTitle")
+        .text("Average transcript counts")
+        .attr("x", width )
+        .attr("y", 25);
+
+
+  });
+};
+</script>
+
+<script src="javascripts/scale.fix.js"></script>
           <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-45186360-9");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
-  </body>
-</html>
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <script type="text/javascript">
+        try {
+          var pageTracker = _gat._getTracker("UA-45186360-9");
+        pageTracker._trackPageview();
+        } catch(err) {}
+      </script>
