@@ -1,0 +1,332 @@
+---
+title: 'Correlation for Caste'
+output: pdf_document
+---
+
+```{r}
+library(ggplot2)
+library(boot)
+library(pgirmess)
+
+x = read.table("Correlations-traits.txt",header=T)
+attach(x)
+names(x)
+```
+
+## Visual inspection
+
+```{r}
+
+ggplot(data=x,aes(x=log(Exp),y=dnds, color=factor(Caste))) + geom_point(alpha = 0.2)+geom_smooth(method="lm", se = FALSE)+theme_bw() + xlab("Log(Expression)") + ylab("Log(dnds)")+scale_y_log10()+ylim(0,.5)
+
+ggplot(data=x,aes(x=log(total),y=dnds, color=factor(Caste))) + geom_point(alpha = 0.2) + geom_smooth(method="lm",se = FALSE)+theme_bw()+ xlab("Log(Connectivity)") + ylab("Log(dnds)")+scale_y_log10()+ylim(0,.5)
+
+ggplot(data=x,aes(x=log(Exp),y=dnds))+geom_point(alpha=.1)+theme_bw()+facet_grid(.~Caste) + xlab("Log(Expression)") + ylab("Log(dnds)")+scale_y_log10()+ylim(0,.5)+geom_smooth(se=FALSE,method="lm")
+
+ggplot(data = x, aes(x = factor(Caste), y = Exp)) + geom_boxplot(notch = TRUE) +theme_bw() +scale_y_log10() + theme_bw() + ylab("Expression log")
+
+ggplot(data = x, aes(x = factor(Caste), y = Exp)) + geom_violin() +theme_bw() +scale_y_log10() + theme_bw() + ylab("Expression log")+stat_summary(fun.data="mean_cl_boot",geom="errorbar",width=.1,color="red")
+
+ggplot(data = x, aes(x = factor(Caste), y = total)) + geom_boxplot(notch = TRUE) +theme_bw() +scale_y_log10() + theme_bw() + ylab("Connectivity log")
+
+ggplot(data = x, aes(x = factor(Caste), y = total)) + geom_violin() +theme_bw() +scale_y_log10() + theme_bw() + ylab("Connectivity log")+stat_summary(fun.data="mean_cl_boot",geom="errorbar",width=.1,color="red")
+
+ggplot(data = x, aes(x = factor(Caste), y = dnds)) + geom_violin() +theme_bw() +scale_y_log10() + theme_bw() + ylab("dnds")+stat_summary(fun.data="mean_cl_boot",geom="errorbar",width=.1,color="red")+ylim(.1,.7)
+
+```
+
+# 1) dnds vs connectivity * Exp
+```{r}
+form1 = log(dnds)  ~ log(Exp) * log(total)
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+
+```
+
+# 1) dnds
+```{r}
+#First test
+kruskalmc(dnds~factor(Caste),data=x)
+
+bmean <- function(d, i){ return(mean(d[i]))}
+boot.ci(boot(subset(x,Caste=="Queen")$dnds,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Worker")$dnds,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Not")$dnds,statistic=bmean,R=1000),type="basic")
+
+#glm
+# Contrast worker
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=3)
+contrasts(x$Caste)
+form1 = log(dnds)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+
+#contrast queen
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=2)
+contrasts(x$Caste)
+form1 = log(dnds)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+```
+
+# 2) Connectivity
+```{r}
+#First test
+kruskalmc(total~factor(Caste),data=x)
+
+bmean <- function(d, i){ return(mean(d[i]))}
+boot.ci(boot(subset(x,Caste=="Queen")$total,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Worker")$total,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Not")$total,statistic=bmean,R=1000),type="basic")
+
+#glm
+# Contrast worker
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=3)
+contrasts(x$Caste)
+form1 = log(total)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+
+#contrast queen
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=2)
+contrasts(x$Caste)
+form1 = log(total)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+```
+
+# 3) Expression levels
+```{r}
+#First test
+kruskalmc(Exp~factor(Caste),data=x)
+
+bmean <- function(d, i){ return(mean(d[i]))}
+boot.ci(boot(subset(x,Caste=="Queen")$Exp,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Worker")$Exp,statistic=bmean,R=1000),type="basic")
+boot.ci(boot(subset(x,Caste=="Not")$Exp,statistic=bmean,R=1000),type="basic")
+
+#glm
+# Contrast worker
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=3)
+contrasts(x$Caste)
+form1 = log(Exp)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+
+#contrast queen
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=2)
+contrasts(x$Caste)
+form1 = log(Exp)  ~ Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+```
+
+
+
+# 4) Large correlation model
+```{r}
+# Contrast worker
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=3)
+contrasts(x$Caste)
+form1 = log(dnds)~ log(total) * Caste + log(Exp) * Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+twosidep(results$t[,4])
+twosidep(results$t[,5])
+twosidep(results$t[,6])
+twosidep(results$t[,7])
+twosidep(results$t[,8])
+twosidep(results$t[,9])
+
+# Contrast queen
+contrasts(x$Caste) <- contr.treatment(levels(x$Caste),base=2)
+contrasts(x$Caste)
+form1 = log(dnds)~ log(total) * Caste + log(Exp) * Caste
+rate.lm <- glm(formula = form1,data=x)
+summary(rate.lm)
+lmfit <- function(formula,data, indices) {
+  d<-data[indices, ]
+  fit <- (lm(formula, data = d))
+  return(coef(fit))
+}
+
+results <- boot(data = x, statistic = lmfit, R = 1000, formula = form1)
+for (i in 2:length(rate.lm$coefficients)) {
+  bci <- boot.ci(results, type = "basic", index = i)
+  print(sprintf("%s,%.4f,%.4f,%.4f", names(rate.lm$coefficients)[i], results$t0[i],
+                bci$basic[4], bci$basic[5]))
+}
+twosidep<-function(data){
+  p1<-sum(data>0)/length(data)
+  p2<-sum(data<0)/length(data)
+  p<-min(p1,p2)*2
+  print(p)
+}
+twosidep(results$t[,2])
+twosidep(results$t[,3])
+twosidep(results$t[,4])
+twosidep(results$t[,5])
+twosidep(results$t[,6])
+twosidep(results$t[,7])
+twosidep(results$t[,8])
+twosidep(results$t[,9])
